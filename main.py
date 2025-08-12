@@ -105,7 +105,7 @@ async def start_clicking_loop(user_id):
                             print("✅ Кликер tugmasi bosildi")
                             break
 
-            await asyncio.sleep(360)  # 6 minut kutish
+            await asyncio.sleep(400)  # 6 minut kutish
 
     except Exception as e:
         print("❌ Ishlash vaqtida xatolik:", e)

@@ -1,4 +1,5 @@
 import asyncio
+import re
 from telegram import Update
 from telegram.ext import (
     ApplicationBuilder, CommandHandler, ContextTypes,
@@ -96,14 +97,38 @@ async def start_clicking_loop(user_id):
 
             # So‘nggi bot xabarini olish
             messages = await client.get_messages(bot_username, limit=1)
-            if messages and messages[0].buttons:
-                # Tugmalardan "Кликер" ni izlash
-                for row in messages[0].buttons:
-                    for button in row:
-                        if "Кликер" in button.text:
-                            await button.click()
-                            print("✅ Кликер tugmasi bosildi")
+            if not messages:
+                await asyncio.sleep(5)
+                continue
+
+            msg = messages[0]
+            text = msg.message or ""
+
+            if msg.buttons:
+                # CAPTCHA tekshirish: «...» ichidagi so‘zni olish
+                match = re.search(r"«(.+?)»", text)
+                if match:
+                    target = match.group(1).strip()
+                    print(f"🔍 Captcha topildi! Kerakli rasm: {target}")
+
+                    clicked = False
+                    for row in msg.buttons:
+                        for button in row:
+                            if target.lower() in button.text.lower():
+                                await button.click()
+                                print(f"✅ Captcha bosildi: {button.text}")
+                                clicked = True
+                                break
+                        if clicked:
                             break
+                else:
+                    # Oddiy "Кликер" tugmasini izlash
+                    for row in msg.buttons:
+                        for button in row:
+                            if "Кликер" in button.text:
+                                await button.click()
+                                print("✅ Кликер tugmasi bosildi")
+                                break
 
             await asyncio.sleep(400)  # 6 minut kutish
 
